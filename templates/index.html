@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compression Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    text-align: center;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+}
+
+textarea, input {
+    width: 70%;
+    padding: 12px;
+    margin: 10px;
+    border-radius: 12px;
+    border: none;
+}
+
+button {
+    padding: 12px 25px;
+    background: #22c55e;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+}
+
+.card {
+    background: rgba(30, 41, 59, 0.8);
+    padding: 20px;
+    margin: 20px auto;
+    border-radius: 15px;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid white;
+    padding: 6px 12px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>🚀 Compression Dashboard</h1>
+
+<form action="/process" method="POST" enctype="multipart/form-data">
+    <textarea name="text" placeholder="Enter text..."></textarea><br>
+    <input type="file" name="file"><br>
+    <button type="submit">Run Compression</button>
+</form>
+
+{% if error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
+
+{% if original %}
+
+<div class="card">
+    <h2>Original Text</h2>
+    <p>{{ original }}</p>
+</div>
+
+<div class="card">
+    <h2>Huffman Coding</h2>
+    <p><b>Encoded:</b> {{ huff_encoded }}</p>
+    <p><b>Decoded:</b> {{ huff_decoded }}</p>
+    <p><b>Compression:</b> {{ (huff_ratio*100)|round(2) }}%</p>
+    <p><b>Time:</b> {{ huff_time }} sec</p>
+    <a href="/download/huffman"><button>Download</button></a>
+</div>
+
+<div class="card">
+    <h2>Shannon-Fano Coding</h2>
+    <p><b>Encoded:</b> {{ shan_encoded }}</p>
+    <p><b>Decoded:</b> {{ shan_decoded }}</p>
+    <p><b>Compression:</b> {{ (shan_ratio*100)|round(2) }}%</p>
+    <p><b>Time:</b> {{ shan_time }} sec</p>
+    <a href="/download/shannon"><button>Download</button></a>
+</div>
+
+<div class="card">
+    <h2>📊 Compression Comparison</h2>
+    <canvas id="barChart"></canvas>
+</div>
+
+<div class="card">
+    <h2>Huffman Codes</h2>
+    <table>
+        <tr><th>Char</th><th>Code</th></tr>
+        {% for k, v in huff_codes.items() %}
+        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="card">
+    <h2>Shannon-Fano Codes</h2>
+    <table>
+        <tr><th>Char</th><th>Code</th></tr>
+        {% for k, v in shan_codes.items() %}
+        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+const huff = ({{ huff_ratio }} * 100).toFixed(1);
+const shan = ({{ shan_ratio }} * 100).toFixed(1);
+
+// 📊 BAR GRAPH ONLY
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Huffman', 'Shannon'],
+        datasets: [{
+            label: 'Compression (%)',
+            data: [huff, shan],
+            backgroundColor: ['#22c55e', '#ef4444']
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { display: false },
+            datalabels: {
+                color: 'white',
+                anchor: 'end',
+                align: 'top',
+                formatter: (value) => value + '%'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Percentage of Original Size'
+                }
+            }
+        }
+    },
+    plugins: [ChartDataLabels]
+});
+</script>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>
