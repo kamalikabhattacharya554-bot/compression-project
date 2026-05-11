@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, send_file
-from algorithms import huffman, shannon_fano
+import huffman
+import shannon_fano
 from striprtf.striprtf import rtf_to_text
 import time
 import io
